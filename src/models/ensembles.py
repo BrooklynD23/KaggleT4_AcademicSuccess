@@ -14,6 +14,12 @@ Imagine you're trying to predict stock prices. You could ask:
 
 Each has blind spots, but together they cover more ground. That's ensembling!
 
+Enhanced with Phase 4 improvements:
+- Weighted voting based on validation performance
+- Improved probability calibration
+- Multiple meta-learner options for stacking
+- Gradient Boosting meta-learner support
+
 Author: ML Engineering Team
 Date: November 2025
 """
@@ -22,13 +28,14 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import VotingClassifier, StackingClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, RidgeClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import f1_score, classification_report
+from sklearn.model_selection import cross_val_score
 from typing import Dict, List, Tuple, Optional, Any
 import warnings
 
@@ -115,11 +122,19 @@ class VotingEnsemble:
     ⚠️ With only 2 models (ties are problematic)
     ⚠️ When one model is much better than others (it should dominate)
     ⚠️ When models make correlated errors
+    
+    PHASE 4 ENHANCEMENTS:
+    --------------------
+    - Weighted voting based on validation performance
+    - Improved probability calibration with isotonic regression option
+    - Performance-based weight computation
     """
     
     def __init__(self, 
                  voting: str = 'soft',
                  use_calibration: bool = True,
+                 use_weighted_voting: bool = True,
+                 calibration_method: str = 'sigmoid',
                  random_state: int = 42):
         """
         Initialize Voting Ensemble.
@@ -132,13 +147,25 @@ class VotingEnsemble:
         use_calibration : bool
             Whether to calibrate probabilities. Important for soft voting!
             Calibration ensures that "70% confident" actually means 70% accuracy.
+            
+        use_weighted_voting : bool (Phase 4 enhancement)
+            If True, compute weights based on cross-validation performance.
+            Better-performing models get higher weights.
+            
+        calibration_method : str ('sigmoid' or 'isotonic')
+            Method for probability calibration.
+            - 'sigmoid': Platt scaling, works well with small datasets
+            - 'isotonic': Non-parametric, needs more data but more flexible
         """
         self.voting = voting
         self.use_calibration = use_calibration
+        self.use_weighted_voting = use_weighted_voting
+        self.calibration_method = calibration_method
         self.random_state = random_state
         self.name = f"Voting Ensemble ({voting})"
         self.model = None
         self.base_models = None
+        self.model_weights = None
         
     def _create_base_models(self) -> List[Tuple[str, Any]]:
         """
@@ -195,13 +222,14 @@ class VotingEnsemble:
                 'colsample_bytree': 0.8,
                 'random_state': self.random_state,
                 'n_jobs': -1,
-                'use_label_encoder': False,
-                'eval_metric': 'mlogloss'
+                'eval_metric': 'mlogloss',
+                'verbosity': 0
             }
             
+            # XGBoost 2.0+ GPU configuration
             if is_gpu_available():
-                xgb_params['tree_method'] = 'gpu_hist'
-                xgb_params['predictor'] = 'gpu_predictor'
+                xgb_params['tree_method'] = 'hist'
+                xgb_params['device'] = 'cuda'
                 
             xgb = XGBClassifier(**xgb_params)
             base_models.append(('xgboost', xgb))
@@ -228,27 +256,56 @@ class VotingEnsemble:
         1. Each base model trains on the full training data
         2. Models are stored for later voting
         3. If calibration enabled, probabilities are adjusted
+        4. If weighted voting enabled, compute weights from CV performance (Phase 4)
         """
         self.base_models = self._create_base_models()
+        
+        # Phase 4: Compute performance-based weights using cross-validation
+        if self.use_weighted_voting and self.voting == 'soft':
+            print("📊 Computing performance-based weights (CV)...")
+            weights = []
+            for name, model in self.base_models:
+                try:
+                    cv_scores = cross_val_score(model, X, y, cv=3, scoring='f1_macro', n_jobs=-1)
+                    weight = cv_scores.mean()
+                    weights.append(weight)
+                    print(f"   {name}: CV F1 = {weight:.3f}")
+                except Exception as e:
+                    weights.append(0.5)  # Default weight if CV fails
+                    print(f"   {name}: CV failed, using default weight")
+            
+            # Normalize weights to sum to len(weights) for interpretability
+            weights = np.array(weights)
+            weights = weights / weights.sum() * len(weights)
+            self.model_weights = weights.tolist()
+            print(f"   Computed weights: {[f'{w:.2f}' for w in self.model_weights]}")
+        else:
+            self.model_weights = None
         
         # Apply calibration if requested (important for soft voting!)
         if self.use_calibration and self.voting == 'soft':
             calibrated_models = []
             for name, model in self.base_models:
-                # Platt scaling calibration
-                calibrated = CalibratedClassifierCV(model, method='sigmoid', cv=3)
+                # Platt scaling or isotonic calibration
+                calibrated = CalibratedClassifierCV(
+                    model, 
+                    method=self.calibration_method, 
+                    cv=3
+                )
                 calibrated_models.append((name, calibrated))
             self.base_models = calibrated_models
         
         self.model = VotingClassifier(
             estimators=self.base_models,
             voting=self.voting,
+            weights=self.model_weights,
             n_jobs=-1
         )
         
-        print(f"🗳️ Training Voting Ensemble with {len(self.base_models)} models:")
-        for name, _ in self.base_models:
-            print(f"   - {name}")
+        print(f"\n🗳️ Training Voting Ensemble with {len(self.base_models)} models:")
+        for i, (name, _) in enumerate(self.base_models):
+            weight_str = f" (weight={self.model_weights[i]:.2f})" if self.model_weights else ""
+            print(f"   - {name}{weight_str}")
         
         self.model.fit(X, y)
         
@@ -398,12 +455,13 @@ class StackingEnsemble:
         
         Parameters:
         -----------
-        meta_model : str ('logistic', 'ridge', 'rf')
+        meta_model : str ('logistic', 'ridge', 'rf', 'gb')
             Type of meta-learner.
             
             'logistic' (recommended): Simple, interpretable, less prone to overfit
             'ridge': L2-regularized linear model
             'rf': Can capture non-linear combinations (but may overfit)
+            'gb': GradientBoosting - powerful but may overfit (Phase 4 addition)
             
         cv : int
             Cross-validation folds for generating base model predictions.
@@ -460,13 +518,14 @@ class StackingEnsemble:
                 'learning_rate': 0.1,
                 'random_state': self.random_state,
                 'n_jobs': -1,
-                'use_label_encoder': False,
-                'eval_metric': 'mlogloss'
+                'eval_metric': 'mlogloss',
+                'verbosity': 0
             }
             
+            # XGBoost 2.0+ GPU configuration
             if is_gpu_available():
-                xgb_params['tree_method'] = 'gpu_hist'
-                xgb_params['predictor'] = 'gpu_predictor'
+                xgb_params['tree_method'] = 'hist'
+                xgb_params['device'] = 'cuda'
                 
             xgb = XGBClassifier(**xgb_params)
             base_models.append(('xgb', xgb))
@@ -495,6 +554,10 @@ class StackingEnsemble:
         [RF: 0.4, XGB: 0.5, KNN: 0.1, LR_base: 0.0]
         
         This tells us: Trust XGB most, RF second, KNN a little, ignore LR_base
+        
+        PHASE 4 ADDITIONS:
+        -----------------
+        - GradientBoosting meta-learner for capturing non-linear combinations
         """
         if self.meta_model_type == 'logistic':
             return LogisticRegression(
@@ -503,16 +566,24 @@ class StackingEnsemble:
                 random_state=self.random_state
             )
         elif self.meta_model_type == 'ridge':
-            from sklearn.linear_model import RidgeClassifier
             return RidgeClassifier(random_state=self.random_state)
         elif self.meta_model_type == 'rf':
             return RandomForestClassifier(
                 n_estimators=50,
                 max_depth=5,
+                class_weight='balanced',
+                random_state=self.random_state
+            )
+        elif self.meta_model_type == 'gb':
+            # Phase 4: GradientBoosting meta-learner
+            return GradientBoostingClassifier(
+                n_estimators=50,
+                max_depth=3,
+                learning_rate=0.1,
                 random_state=self.random_state
             )
         else:
-            raise ValueError(f"Unknown meta_model: {self.meta_model_type}")
+            raise ValueError(f"Unknown meta_model: {self.meta_model_type}. Choose from: logistic, ridge, rf, gb")
     
     def fit(self, X: np.ndarray, y: np.ndarray) -> 'StackingEnsemble':
         """
@@ -688,13 +759,14 @@ class CascadingEnsemble:
                 'colsample_bytree': 0.8,
                 'random_state': self.random_state,
                 'n_jobs': -1,
-                'use_label_encoder': False,
-                'eval_metric': 'mlogloss'
+                'eval_metric': 'mlogloss',
+                'verbosity': 0
             }
             
+            # XGBoost 2.0+ GPU configuration
             if is_gpu_available():
-                xgb_params['tree_method'] = 'gpu_hist'
-                xgb_params['predictor'] = 'gpu_predictor'
+                xgb_params['tree_method'] = 'hist'
+                xgb_params['device'] = 'cuda'
                 
             return XGBClassifier(**xgb_params)
         else:

@@ -323,8 +323,7 @@ if XGBOOST_AVAILABLE:
                      subsample: float = 0.8,
                      colsample_bytree: float = 0.8,
                      random_state: int = 42,
-                     n_jobs: int = -1,
-                     use_label_encoder: bool = False):
+                     n_jobs: int = -1):
             """
             Initialize XGBoost with sensible defaults.
             
@@ -362,7 +361,7 @@ if XGBOOST_AVAILABLE:
             
             self.use_gpu = True # Default to auto-detect
             
-            # Base parameters
+            # Base parameters (XGBoost 2.0+ removed use_label_encoder)
             xgb_params = {
                 'n_estimators': n_estimators,
                 'max_depth': max_depth,
@@ -371,16 +370,16 @@ if XGBOOST_AVAILABLE:
                 'colsample_bytree': colsample_bytree,
                 'random_state': random_state,
                 'n_jobs': n_jobs,
-                'use_label_encoder': use_label_encoder,
                 'eval_metric': 'mlogloss',
-                'objective': 'multi:softprob'
+                'objective': 'multi:softprob',
+                'verbosity': 0  # Suppress XGBoost warnings
             }
             
-            # GPU Configuration
+            # GPU Configuration (XGBoost 2.0+ uses device='cuda' instead of tree_method='gpu_hist')
             if self.use_gpu and is_gpu_available():
                 print("🚀 GPU detected! Configuring XGBoost to use CUDA.")
-                xgb_params['tree_method'] = 'gpu_hist'
-                xgb_params['predictor'] = 'gpu_predictor'
+                xgb_params['tree_method'] = 'hist'
+                xgb_params['device'] = 'cuda'
             else:
                 print("🖥️ Using CPU for XGBoost.")
             
@@ -390,8 +389,7 @@ if XGBOOST_AVAILABLE:
             
         def fit(self, X: np.ndarray, y: np.ndarray,
                 feature_names: Optional[List[str]] = None,
-                eval_set: Optional[List[Tuple]] = None,
-                early_stopping_rounds: Optional[int] = 50) -> 'XGBoostModel':
+                eval_set: Optional[List[Tuple]] = None) -> 'XGBoostModel':
             """
             Train XGBoost with optional early stopping.
             
@@ -409,13 +407,17 @@ if XGBOOST_AVAILABLE:
             fit_params = {}
             if eval_set is not None:
                 fit_params['eval_set'] = eval_set
-                if early_stopping_rounds:
-                    fit_params['early_stopping_rounds'] = early_stopping_rounds
                 fit_params['verbose'] = False
+                # Set early_stopping_rounds only when eval_set is provided (XGBoost 2.0+)
+                # This prevents CV from failing when no eval_set is available
+                self.model.set_params(early_stopping_rounds=50)
+            else:
+                # Disable early stopping for CV (no eval_set available)
+                self.model.set_params(early_stopping_rounds=None)
             
             self.model.fit(X, y, **fit_params)
             
-            if hasattr(self.model, 'best_iteration'):
+            if eval_set is not None and hasattr(self.model, 'best_iteration'):
                 print(f"📊 Best iteration: {self.model.best_iteration}")
             
             return self
