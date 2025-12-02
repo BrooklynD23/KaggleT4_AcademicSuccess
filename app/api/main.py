@@ -181,6 +181,7 @@ class MetricsResponse(BaseModel):
     plots: Dict[str, str]
     artifact_path: str
     phases: Optional[List[Dict[str, Any]]]
+    model_comparison: Optional[List[Dict[str, Any]]]
 
 
 class HealthResponse(BaseModel):
@@ -391,7 +392,9 @@ async def latest_metrics() -> MetricsResponse:
         per_class_f1=per_class_map,
         plots=_list_plot_paths(),
         artifact_path=str((ARTIFACT_DIR / "latest_run.json").relative_to(PROJECT_ROOT)),
-        phases=payload.get("phases", [])
+
+        phases=payload.get("phases", []),
+        model_comparison=payload.get("model_comparison", [])
     )
 
 

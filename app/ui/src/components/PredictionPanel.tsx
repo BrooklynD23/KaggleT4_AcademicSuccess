@@ -22,9 +22,20 @@ const PRESET_CASES = [
       Course: 171,
       approval_rate_sem1: 1.0,
       approval_rate_overall: 1.0,
-      total_approved_units: 6,
+      total_approved_units: 12,
       financial_risk: 0,
-      high_risk_student: 0
+      high_risk_student: 0,
+      // Critical features previously missing (defaulted to 0 = failure)
+      'Tuition fees up to date': 1,
+      'Scholarship holder': 1,
+      'Curricular units 2nd sem (enrolled)': 6,
+      'Curricular units 2nd sem (evaluations)': 6,
+      'Curricular units 2nd sem (approved)': 6,
+      'Curricular units 2nd sem (grade)': 16.0,
+      'Curricular units 1st sem (enrolled)': 6,
+      'Curricular units 1st sem (evaluations)': 6,
+      'Curricular units 1st sem (approved)': 6,
+      'Debtor': 0
     }
   },
   {
@@ -33,14 +44,25 @@ const PRESET_CASES = [
     features: {
       grade_improvement: -4.0,
       grade_per_unit_sem1: 5.0,
-      'Curricular units 1st sem (grade)': 7.0,
+      'Curricular units 1st sem (grade)': 10.0,
       "Father's occupation": 18,
       Course: 9500,
       approval_rate_sem1: 0.4,
-      approval_rate_overall: 0.35,
+      approval_rate_overall: 0.2,
       total_approved_units: 2,
       financial_risk: 1,
-      high_risk_student: 1
+      high_risk_student: 1,
+      // Critical features
+      'Tuition fees up to date': 0,
+      'Scholarship holder': 0,
+      'Curricular units 2nd sem (enrolled)': 6,
+      'Curricular units 2nd sem (evaluations)': 0,
+      'Curricular units 2nd sem (approved)': 0,
+      'Curricular units 2nd sem (grade)': 0.0,
+      'Curricular units 1st sem (enrolled)': 6,
+      'Curricular units 1st sem (evaluations)': 4,
+      'Curricular units 1st sem (approved)': 2,
+      'Debtor': 1
     }
   },
   {
@@ -54,9 +76,20 @@ const PRESET_CASES = [
       Course: 9238,
       approval_rate_sem1: 0.67,
       approval_rate_overall: 0.65,
-      total_approved_units: 4,
+      total_approved_units: 8,
       financial_risk: 0,
-      high_risk_student: 0
+      high_risk_student: 0,
+      // Critical features
+      'Tuition fees up to date': 1,
+      'Scholarship holder': 0,
+      'Curricular units 2nd sem (enrolled)': 6,
+      'Curricular units 2nd sem (evaluations)': 6,
+      'Curricular units 2nd sem (approved)': 4,
+      'Curricular units 2nd sem (grade)': 11.5,
+      'Curricular units 1st sem (enrolled)': 6,
+      'Curricular units 1st sem (evaluations)': 6,
+      'Curricular units 1st sem (approved)': 4,
+      'Debtor': 0
     }
   }
 ];

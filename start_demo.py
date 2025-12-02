@@ -33,6 +33,10 @@ REQUIREMENTS_FILE = PROJECT_ROOT / "requirements.txt"
 
 def get_python_cmd():
     """Get the best Python command for the system."""
+    # If in a venv, always use the current executable
+    if sys.prefix != sys.base_prefix:
+        return [sys.executable]
+        
     # On Windows, try 'py' launcher first (handles multiple Python versions)
     if sys.platform == "win32":
         if shutil.which("py"):
@@ -110,6 +114,31 @@ def run_pipeline():
     print("✅ Pipeline completed successfully.")
 
 
+def show_model_comparison():
+    """Run the model comparison script."""
+    print("\n📊 Running model comparison...")
+    python_cmd = get_python_cmd()
+    
+    # Check if rich is installed (it should be, but just in case)
+    try:
+        subprocess.run(
+            python_cmd + ["-c", "import rich"], 
+            capture_output=True, 
+            check=True
+        )
+    except subprocess.CalledProcessError:
+        print("⚠️  'rich' library not found. Installing...")
+        subprocess.run(python_cmd + ["-m", "pip", "install", "rich", "-q"])
+
+    result = subprocess.run(
+        python_cmd + ["compare_models.py"],
+        cwd=PROJECT_ROOT,
+    )
+    if result.returncode != 0:
+        print("⚠️  Model comparison failed (non-critical).")
+
+
+
 def regenerate_visuals():
     """Run src.evaluation.visuals to refresh plots."""
     print("\n🎨 Regenerating visualization assets...")
@@ -162,11 +191,9 @@ def start_services():
         api_proc = subprocess.Popen(
             python_cmd + ["-m", "uvicorn", "app.api.main:app", "--host", "127.0.0.1", "--port", "8000"],
             cwd=PROJECT_ROOT,
-            # Show output for debugging
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1
+            # Stream output to console for debugging
+            stdout=None,
+            stderr=None,
         )
         
         # Wait a moment and check if API started
@@ -261,6 +288,9 @@ def main():
     else:
         print("\n⚠️  No saved models found. Training is required.")
         run_pipeline()
+
+    # Step 2.5: Show model comparison
+    show_model_comparison()
 
     # Step 3: Regenerate visuals
     regenerate_visuals()

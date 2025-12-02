@@ -1,0 +1,334 @@
+==================================================
+🎓 Student Success Prediction — Demo Launcher
+==================================================
+
+📦 Installing Python dependencies...
+   ✔ Python dependencies installed.
+
+📂 Found 8 saved model(s) in models\saved_models
+   • best_model_20251130_151027.joblib
+   • best_model_20251130_192627.joblib
+   • best_model_20251201_222209.joblib
+
+Do you want to retrain the model? [y/N]: y
+
+🚀 Starting training pipeline...
+╭───────────────────────────────────────────────╮
+│ 🎓 Student Success Prediction Pipeline        │
+│ Hardware-friendly mode with progress tracking │
+╰───────────────────────────────────────────────╯
+          Configuration           
+┏━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┓
+┃ Setting                ┃ Value ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━┩
+│ Feature Engineering    │ True  │
+│ SMOTE                  │ True  │
+│ Hyperparameter Tuning  │ True  │
+│ Tuning Iterations      │ 20    │
+│ CV Folds               │ 3     │
+│ Threshold Optimization │ True  │
+└────────────────────────┴───────┘
+                                                                                                                                                                                                                                                  
+============================================================                                                                                                                                                                                      
+📂 STAGE 1: DATA LOADING AND VALIDATION                                                                                                                                                                                                           
+============================================================                                                                                                                                                                                      
+📂 Loaded data: 4424 rows, 35 columns
+🔧 Feature engineering: 35 → 71 columns (+36 engineered features)
+
+📊 Dataset stats:                                                                                                                                                                                                                                 
+   Samples: 4424                                                                                                                                                                                                                                  
+   Features: 70                                                                                                                                                                                                                                   
+   Class distribution: {2: 0.4993218806509946, 0: 0.3212025316455696, 1: 0.1794755877034358}                                                                                                                                                      
+🔒 Leakage guard removed 11 columns: Curricular units 2nd sem (approved), Curricular units 2nd sem (credited), Curricular units 2nd sem (enrolled), Curricular units 2nd sem (evaluations), Curricular units 2nd sem (grade), Curricular units 2nd
+sem (without evaluations), approval_rate_sem2, eval_efficiency_sem2...
+
+📊 Data splits:                                                                                                                                                                                                                                   
+   Training: 3096 samples                                                                                                                                                                                                                         
+   Validation: 664 samples                                                                                                                                                                                                                        
+   Test: 664 samples                                                                                                                                                                                                                              
+
+============================================================                                                                                                                                                                                      
+⚖️ STAGE 2: CLASS IMBALANCE HANDLING (SMOTE)                                                                                                                                                                                                       
+============================================================
+                                                                                                                                                                                                                                                  
+📊 Original class distribution:
+   Class 0: 995 (32.1%)                                                                                                                                                                                                                           
+   Class 1: 556 (18.0%)                                                                                                                                                                                                                           
+   Class 2: 1545 (49.9%)                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                  
+   Using custom SMOTE sampling strategy: {0: 1467, 1: 1313}
+
+📊 After SMOTE:
+   Class 0: 1467 (33.9%)                                                                                                                                                                                                                          
+   Class 1: 1313 (30.4%)                                                                                                                                                                                                                          
+   Class 2: 1545 (35.7%)                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                  
+   Total samples: 3096 → 4325 (+1229)                                                                                                                                                                                                             
+
+============================================================                                                                                                                                                                                      
+🏁 STAGE 3: BASELINE EVALUATION                                                                                                                                                                                                                   
+============================================================                                                                                                                                                                                      
+
+🔧 Training: Most Frequent                                                                                                                                                                                                                        
+   Macro F1: 0.2222
+   Accuracy: 0.5000                                                                                                                                                                                                                               
+                                                                                                                                                                                                                                                  
+🔧 Training: Stratified Random                                                                                                                                                                                                                    
+   Macro F1: 0.3131
+   Accuracy: 0.3328                                                                                                                                                                                                                               
+                                                                                                                                                                                                                                                  
+🔧 Training: Logistic Regression                                                                                                                                                                                                                  
+   Macro F1: 0.7174
+   Accuracy: 0.7590
+This stage may take 10-20 minutes with hyperparameter tuning...
+                                                                                                                                                                                                                                                  
+============================================================                                                                                                                                                                                      
+🌳 STAGE 4: TREE-BASED MODELS                                                                                                                                                                                                                     
+============================================================                                                                                                                                                                                      
+
+🔍 Tuning Random Forest (20 iterations, 2 parallel jobs)...
+   Best CV Macro F1: 0.8187
+   Best params: {'max_depth': 19, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 8, 'n_estimators': 108}
+
+🔍 Tuning XGBoost (20 iterations, 2 parallel jobs)...
+   Best CV Macro F1: 0.8326
+   Best params: {'colsample_bytree': np.float64(0.6431565707973218), 'gamma': np.float64(0.015714592843367126), 'learning_rate': np.float64(0.19455901926649632), 'max_depth': 6, 'min_child_weight': 4, 'n_estimators': 321, 'reg_alpha':        
+np.float64(0.1393314544058757), 'reg_lambda': np.float64(1.2088347585556345), 'subsample': np.float64(0.8159364365206693)}
+🚀 GPU detected! Configuring XGBoost to use CUDA.                                                                                                                                                                                                 
+                                                                                                                                                                                                                                                  
+🔍 Tuning LightGBM (20 iterations, 2 parallel jobs)...                                                                                                                                                                                            
+   Best CV Macro F1: 0.8354
+   Best params: {'colsample_bytree': np.float64(0.9272059063689972), 'learning_rate': np.float64(0.2596118691443396), 'max_depth': 9, 'min_child_samples': 10, 'n_estimators': 236, 'num_leaves': 81, 'reg_alpha':
+np.float64(0.22210781047073025), 'reg_lambda': np.float64(0.2397307346673656), 'subsample': np.float64(0.7350460685614512)}
+🚀 GPU detected! Attempting to use LightGBM with CUDA.                                                                                                                                                                                            
+                                                                                                                                                                                                                                                  
+🔧 Evaluating: Random Forest (Tuned)                                                                                                                                                                                                              
+   Val Macro F1: 0.7205
+   Val Accuracy: 0.7801                                                                                                                                                                                                                           
+   Per-class F1: Dropout=0.8113, Enrolled=0.4934, Graduate=0.8567                                                                                                                                                                                 
+                                                                                                                                                                                                                                                  
+   🔍 Top 5 Features:
+      approval_rate_overall: 11.0%
+      total_approved_units: 9.7%
+      approval_rate_sem1: 6.5%                                                                                                                                                                                                                    
+      Curricular units 1st sem (approved): 5.1%                                                                                                                                                                                                   
+      approval_rate_trend: 4.0%                                                                                                                                                                                                                   
+
+🔧 Evaluating: XGBoost (Tuned)                                                                                                                                                                                                                    
+   Val Macro F1: 0.7232
+   Val Accuracy: 0.7831                                                                                                                                                                                                                           
+   Per-class F1: Dropout=0.7991, Enrolled=0.5116, Graduate=0.8588                                                                                                                                                                                 
+                                                                                                                                                                                                                                                  
+   🔍 Top 5 Features:
+      total_approved_units: 6.6%                                                                                                                                                                                                                  
+      total_units_without_eval: 6.4%                                                                                                                                                                                                              
+      zero_enrolled_sem1: 5.9%                                                                                                                                                                                                                    
+      approval_rate_overall: 5.5%                                                                                                                                                                                                                 
+      Tuition fees up to date: 5.2%                                                                                                                                                                                                               
+
+🔧 Evaluating: LightGBM (Tuned)                                                                                                                                                                                                                   
+   Val Macro F1: 0.7260
+   Val Accuracy: 0.7892                                                                                                                                                                                                                           
+   Per-class F1: Dropout=0.8065, Enrolled=0.5072, Graduate=0.8642                                                                                                                                                                                 
+                                                                                                                                                                                                                                                  
+   🔍 Top 5 Features:                                                                                                                                                                                                                             
+      grade_improvement: 7.6%
+      grade_per_unit_sem1: 6.8%                                                                                                                                                                                                                   
+      Curricular units 1st sem (grade): 6.5%                                                                                                                                                                                                      
+      Father's occupation: 5.9%                                                                                                                                                                                                                   
+      Course: 5.4%                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                  
+============================================================                                                                                                                                                                                      
+🎯 STAGE 5: ENSEMBLE MODELS                                                                                                                                                                                                                       
+============================================================                                                                                                                                                                                      
+
+🔧 Training: Voting Ensemble
+📊 Computing performance-based weights (CV)...                                                                                                                                                                                                    
+   logistic_regression: CV F1 = 0.729
+   random_forest: CV F1 = 0.777
+   xgboost: CV F1 = 0.785
+   knn: CV F1 = 0.761
+   Computed weights: ['0.96', '1.02', '1.03', '1.00']
+                                                                                                                                                                                                                                                  
+🗳️ Training Voting Ensemble with 4 models:                                                                                                                                                                                                         
+   - logistic_regression (weight=0.96)                                                                                                                                                                                                            
+   - random_forest (weight=1.02)                                                                                                                                                                                                                  
+   - xgboost (weight=1.03)                                                                                                                                                                                                                        
+   - knn (weight=1.00)                                                                                                                                                                                                                            
+
+📊 Individual Model Performance (on training data):
+   logistic_regression: Macro F1 = 0.693                                                                                                                                                                                                          
+   random_forest: Macro F1 = 0.849
+   xgboost: Macro F1 = 0.983
+   knn: Macro F1 = 1.000
+   Val Macro F1: 0.7128
+   Val Accuracy: 0.7831
+   Per-class F1: Dropout=0.7973, Enrolled=0.4776, Graduate=0.8634                                                                                                                                                                                 
+                                                                                                                                                                                                                                                  
+🔧 Training: Stacking Ensemble                                                                                                                                                                                                                    
+🏗️ Training Stacking Ensemble
+   Base models: ['lr', 'rf', 'xgb', 'knn']                                                                                                                                                                                                        
+   Meta-model: logistic                                                                                                                                                                                                                           
+   CV folds: 5                                                                                                                                                                                                                                    
+   Val Macro F1: 0.7016
+   Val Accuracy: 0.7636
+   Per-class F1: Dropout=0.7945, Enrolled=0.4649, Graduate=0.8456                                                                                                                                                                                 
+                                                                                                                                                                                                                                                  
+🔧 Training: Stacking (Ridge)                                                                                                                                                                                                                     
+🏗️ Training Stacking Ensemble                                                                                                                                                                                                                      
+   Base models: ['lr', 'rf', 'xgb', 'knn']                                                                                                                                                                                                        
+   Meta-model: ridge
+   CV folds: 5                                                                                                                                                                                                                                    
+   Val Macro F1: 0.7152
+   Val Accuracy: 0.7816                                                                                                                                                                                                                           
+   Per-class F1: Dropout=0.8132, Enrolled=0.4744, Graduate=0.8580
+
+============================================================                                                                                                                                                                                      
+🏆 STAGE 6: MODEL SELECTION                                                                                                                                                                                                                       
+============================================================                                                                                                                                                                                      
+
+📊 Model Rankings (by Macro F1):                                                                                                                                                                                                                  
+--------------------------------------------------                                                                                                                                                                                                
+1. LightGBM (Tuned)                                                                                                                                                                                                                               
+   Macro F1: 0.7260                                                                                                                                                                                                                               
+   Accuracy: 0.7892
+2. XGBoost (Tuned)                                                                                                                                                                                                                                
+   Macro F1: 0.7232                                                                                                                                                                                                                               
+   Accuracy: 0.7831
+3. Random Forest (Tuned)
+   Macro F1: 0.7205
+   Accuracy: 0.7801                                                                                                                                                                                                                               
+4. Logistic Regression (baseline)                                                                                                                                                                                                                 
+   Macro F1: 0.7174                                                                                                                                                                                                                               
+   Accuracy: 0.7590                                                                                                                                                                                                                               
+5. Stacking (Ridge) (ensemble)                                                                                                                                                                                                                    
+   Macro F1: 0.7152
+   Accuracy: 0.7816                                                                                                                                                                                                                               
+6. Voting Ensemble (ensemble)                                                                                                                                                                                                                     
+   Macro F1: 0.7128                                                                                                                                                                                                                               
+   Accuracy: 0.7831                                                                                                                                                                                                                               
+7. Stacking Ensemble (ensemble)
+   Macro F1: 0.7016                                                                                                                                                                                                                               
+   Accuracy: 0.7636                                                                                                                                                                                                                               
+8. Stratified Random (baseline)                                                                                                                                                                                                                   
+   Macro F1: 0.3131
+   Accuracy: 0.3328                                                                                                                                                                                                                               
+9. Most Frequent (baseline)                                                                                                                                                                                                                       
+   Macro F1: 0.2222                                                                                                                                                                                                                               
+   Accuracy: 0.5000                                                                                                                                                                                                                               
+
+🏆 Selected model: LightGBM (Tuned)                                                                                                                                                                                                               
+📝 Logged baseline: Macro F1 = 0.7174                                                                                                                                                                                                             
+📝 Logged Model Training: Macro F1 = 0.7260                                                                                                                                                                                                       
+✓ Meets minimum requirements (0.7)
+
+============================================================                                                                                                                                                                                      
+🎯 STAGE 7: THRESHOLD OPTIMIZATION                                                                                                                                                                                                                
+============================================================
+
+📊 Before threshold optimization:
+   Macro F1: 0.7260                                                                                                                                                                                                                               
+   Per-class F1: Dropout=0.8065, Enrolled=0.5072, Graduate=0.8642                                                                                                                                                                                 
+🎯 Optimizing classification thresholds...
+   Optimal thresholds: [0.21428571 0.72857143 0.27142857]
+   Best Macro F1 with thresholds: 0.7450
+                                                                                                                                                                                                                                                  
+📊 After threshold optimization:                                                                                                                                                                                                                  
+   Macro F1: 0.7450                                                                                                                                                                                                                               
+   Per-class F1: Dropout=0.8099, Enrolled=0.5670, Graduate=0.8580                                                                                                                                                                                 
+   Improvement: +0.0190
+📝 Logged Threshold Optimization: Macro F1 = 0.7450                                                                                                                                                                                               
+
+============================================================                                                                                                                                                                                      
+📋 STAGE 8: FINAL TEST SET EVALUATION                                                                                                                                                                                                             
+============================================================
+   Using optimized thresholds for predictions
+
+🎯 Test Set Results for LightGBM (Tuned):                                                                                                                                                                                                         
+   Macro F1: 0.7174                                                                                                                                                                                                                               
+   Weighted F1: 0.7699                                                                                                                                                                                                                            
+   Accuracy: 0.7590
+                                                                                                                                                                                                                                                  
+📊 Per-class F1 Scores:                                                                                                                                                                                                                           
+   Dropout: 0.7795                                                                                                                                                                                                                                
+   Enrolled: 0.5190
+   Graduate: 0.8536                                                                                                                                                                                                                               
+                                                                                                                                                                                                                                                  
+📊 Classification Report:
+              precision    recall  f1-score   support                                                                                                                                                                                             
+                                                                                                                                                                                                                                                  
+     Dropout       0.86      0.71      0.78       213                                                                                                                                                                                             
+    Enrolled       0.44      0.63      0.52       119                                                                                                                                                                                             
+    Graduate       0.87      0.83      0.85       332                                                                                                                                                                                             
+                                                                                                                                                                                                                                                  
+    accuracy                           0.76       664                                                                                                                                                                                             
+   macro avg       0.72      0.73      0.72       664                                                                                                                                                                                             
+weighted avg       0.79      0.76      0.77       664
+
+📝 Logged Final Evaluation (Test Set): Macro F1 = 0.7174                                                                                                                                                                                          
+
+💾 Model saved to: models\saved_models\best_model_20251202_073142.joblib
+📄 Report saved to: REPORT.md                                                                                                                                                                                                                     
+  Overall Progress                               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:05:34
+  Stage 1: Data Loading & Feature Engineering... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+  Stage 2: SMOTE Resampling...                   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+  Stage 3: Training Baselines...                 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+  Stage 4: Training & Tuning Tree Models...      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:04:57
+  Stage 5: Training Ensembles...                 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:27
+  Stage 6: Selecting Best Model...               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+  Stage 7: Optimizing Thresholds...              ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:03
+  Stage 8: Final Evaluation...                   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+  Saving Model & Generating Report...            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+
+
+           🏆 Final Results
+┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Metric           ┃ Value            ┃
+┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ Model            │ LightGBM (Tuned) │
+│ Test Macro F1    │ 0.7174           │
+│ Test Weighted F1 │ 0.7699           │
+│ Test Accuracy    │ 0.7590           │
+│ Dropout F1       │ 0.7795           │
+│ Enrolled F1      │ 0.5190           │
+│ Graduate F1      │ 0.8536           │
+└──────────────────┴──────────────────┘
+╭─────────────────────────────────────╮
+│ ✅ Pipeline Complete!               │
+│ Model saved to models/saved_models/ │
+│ Report saved to REPORT.md           │
+╰─────────────────────────────────────╯
+✅ Pipeline completed successfully.
+
+📊 Running model comparison...
+                  🏆 Model Performance Comparison (Validation Set)                  
+╭──────┬───────────────────────┬──────────┬──────────┬──────────────────┬──────────╮
+│ Rank │ Model                 │ Macro F1 │ Accuracy │   Diff from Best │ Type     │
+├──────┼───────────────────────┼──────────┼──────────┼──────────────────┼──────────┤
+│  1   │ LightGBM (Tuned)      │   0.7260 │   0.7892 │             BEST │ Model    │
+│  2   │ XGBoost (Tuned)       │   0.7232 │   0.7831 │  -0.0028 (-0.4%) │ Model    │
+│  3   │ Random Forest (Tuned) │   0.7205 │   0.7801 │  -0.0055 (-0.8%) │ Model    │
+│  4   │ Logistic Regression   │   0.7174 │   0.7590 │  -0.0086 (-1.2%) │ Baseline │
+│  5   │ Stacking (Ridge)      │   0.7152 │   0.7816 │  -0.0107 (-1.5%) │ Ensemble │
+│  6   │ Voting Ensemble       │   0.7128 │   0.7831 │  -0.0132 (-1.8%) │ Ensemble │
+│  7   │ Stacking Ensemble     │   0.7016 │   0.7636 │  -0.0243 (-3.3%) │ Ensemble │
+│  8   │ Stratified Random     │   0.3131 │   0.3328 │ -0.4129 (-56.9%) │ Baseline │
+│  9   │ Most Frequent         │   0.2222 │   0.5000 │ -0.5037 (-69.4%) │ Baseline │
+╰──────┴───────────────────────┴──────────┴──────────┴──────────────────┴──────────╯
+
+🔍 Per-Class F1 Score (Top 3 Models)
+
+  Model                   Dropout   Enrolled   Graduate 
+ ───────────────────────────────────────────────────────
+  LightGBM (Tuned)        0.806     0.507      0.864
+  XGBoost (Tuned)         0.799     0.512      0.859
+  Random Forest (Tuned)   0.811     0.493      0.857
+
+
+🎨 Regenerating visualization assets...
+✅ Generated per_class_f1 plot at artifacts\plots\per_class_f1.png
+✅ Generated confusion_matrix plot at artifacts\plots\confusion_matrix.png
+✅ Generated feature_importance plot at artifacts\plots\feature_importance.png
+✅ Visuals regenerated.
+
+📦 UI dependencies already installed.

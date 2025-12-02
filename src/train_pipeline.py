@@ -220,6 +220,37 @@ class ResultsTracker:
             'class_names': class_names
         }
     
+    def log_model_comparison(self, model_results: Dict[str, Any]):
+        """Log validation metrics for all trained models."""
+        comparison = []
+        best_f1 = 0
+        
+        # Find best score for calculating deltas
+        for results in model_results.values():
+            if results['macro_f1'] > best_f1:
+                best_f1 = results['macro_f1']
+        
+        for name, results in model_results.items():
+            # Calculate delta from best
+            delta = results['macro_f1'] - best_f1
+            delta_pct = (delta / best_f1 * 100) if best_f1 > 0 else 0
+            
+            entry = {
+                'model_name': name,
+                'macro_f1': results['macro_f1'],
+                'accuracy': results['accuracy'],
+                'per_class_f1': results['per_class_f1'],
+                'is_baseline': results.get('is_baseline', False),
+                'is_ensemble': results.get('is_ensemble', False),
+                'delta_from_best': delta,
+                'delta_pct': delta_pct
+            }
+            comparison.append(entry)
+            
+        # Sort by Macro F1 descending
+        comparison.sort(key=lambda x: x['macro_f1'], reverse=True)
+        self.results['model_comparison'] = comparison
+    
     def set_feature_names(self, feature_names: List[str]):
         """Persist the canonical feature ordering for downstream consumers."""
         self.results['feature_names'] = list(feature_names)
@@ -1308,6 +1339,9 @@ class TrainingPipeline:
                 self.best_model_name = name
                 self.results_tracker.results['best_model_name'] = self.best_model_name
                 break
+        
+        # Log comparison of all models
+        self.results_tracker.log_model_comparison(self.model_results)
         
         print(f"\n🏆 Selected model: {self.best_model_name}")
         

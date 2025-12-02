@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-30T19:26:27.954439",
+  "generated_at": "2025-12-02T07:31:42.610152",
   "baseline": {
     "macro_f1": 0.7173869141678169,
     "accuracy": 0.7590361445783133,
@@ -9,7 +9,7 @@
       0.8429237947122862
     ],
     "model_name": "Logistic Regression",
-    "timestamp": "2025-11-30T19:26:22.287510"
+    "timestamp": "2025-12-02T07:31:36.847921"
   },
   "phases": [
     {
@@ -25,7 +25,7 @@
         ]
       },
       "params": {},
-      "timestamp": "2025-11-30T19:26:22.290475",
+      "timestamp": "2025-12-02T07:31:36.850917",
       "delta_from_baseline": 0.008567160178311273,
       "delta_pct": 1.1942175148607708
     },
@@ -42,7 +42,7 @@
         ]
       },
       "params": {},
-      "timestamp": "2025-11-30T19:26:26.533042",
+      "timestamp": "2025-12-02T07:31:41.198094",
       "delta_from_baseline": 0.02759055047720571,
       "delta_pct": 3.8459790570910117
     },
@@ -59,7 +59,7 @@
         ]
       },
       "params": {},
-      "timestamp": "2025-11-30T19:26:27.254575",
+      "timestamp": "2025-12-02T07:31:41.915252",
       "delta_from_baseline": -7.155277296111429e-06,
       "delta_pct": -0.0009974083935461373
     }
@@ -439,7 +439,7 @@
     }
   },
   "timestamps": {
-    "baseline": "2025-11-30T19:26:22.287517"
+    "baseline": "2025-12-02T07:31:36.847929"
   },
   "feature_names": [
     "Marital status",
@@ -533,7 +533,7 @@
         277
       ]
     ],
-    "timestamp": "2025-11-30T19:26:27.193792"
+    "timestamp": "2025-12-02T07:31:41.847484"
   },
   "best_model_name": "LightGBM (Tuned)",
   "leakage_mask": [
@@ -553,5 +553,133 @@
     "Dropout",
     "Enrolled",
     "Graduate"
+  ],
+  "model_comparison": [
+    {
+      "model_name": "LightGBM (Tuned)",
+      "macro_f1": 0.7259540743461281,
+      "accuracy": 0.7891566265060241,
+      "per_class_f1": [
+        0.8064516129032258,
+        0.507177033492823,
+        0.8642335766423358
+      ],
+      "is_baseline": false,
+      "is_ensemble": false,
+      "delta_from_best": 0.0,
+      "delta_pct": 0.0
+    },
+    {
+      "model_name": "XGBoost (Tuned)",
+      "macro_f1": 0.7231758829532136,
+      "accuracy": 0.7831325301204819,
+      "per_class_f1": [
+        0.7990762124711316,
+        0.5116279069767442,
+        0.8588235294117647
+      ],
+      "is_baseline": false,
+      "is_ensemble": false,
+      "delta_from_best": -0.002778191392914575,
+      "delta_pct": -0.3826951994748306
+    },
+    {
+      "model_name": "Random Forest (Tuned)",
+      "macro_f1": 0.7204778841267642,
+      "accuracy": 0.7801204819277109,
+      "per_class_f1": [
+        0.8113207547169812,
+        0.4933920704845815,
+        0.8567208271787297
+      ],
+      "is_baseline": false,
+      "is_ensemble": false,
+      "delta_from_best": -0.005476190219363963,
+      "delta_pct": -0.754343892111413
+    },
+    {
+      "model_name": "Logistic Regression",
+      "macro_f1": 0.7173869141678169,
+      "accuracy": 0.7590361445783133,
+      "per_class_f1": [
+        0.7759036144578313,
+        0.5333333333333333,
+        0.8429237947122862
+      ],
+      "is_baseline": true,
+      "is_ensemble": false,
+      "delta_from_best": -0.008567160178311273,
+      "delta_pct": -1.1801242642005656
+    },
+    {
+      "model_name": "Stacking (Ridge)",
+      "macro_f1": 0.7152094632764986,
+      "accuracy": 0.7816265060240963,
+      "per_class_f1": [
+        0.8132387706855791,
+        0.4744186046511628,
+        0.8579710144927536
+      ],
+      "is_baseline": false,
+      "is_ensemble": true,
+      "delta_from_best": -0.01074461106962954,
+      "delta_pct": -1.4800676033545628
+    },
+    {
+      "model_name": "Voting Ensemble",
+      "macro_f1": 0.7127501827093804,
+      "accuracy": 0.7831325301204819,
+      "per_class_f1": [
+        0.7972665148063781,
+        0.47761194029850745,
+        0.8633720930232558
+      ],
+      "is_baseline": false,
+      "is_ensemble": true,
+      "delta_from_best": -0.013203891636747733,
+      "delta_pct": -1.8188329129002505
+    },
+    {
+      "model_name": "Stacking Ensemble",
+      "macro_f1": 0.7016489223076157,
+      "accuracy": 0.7635542168674698,
+      "per_class_f1": [
+        0.7944572748267898,
+        0.4649122807017544,
+        0.8455772113943029
+      ],
+      "is_baseline": false,
+      "is_ensemble": true,
+      "delta_from_best": -0.024305152038512468,
+      "delta_pct": -3.348028876400244
+    },
+    {
+      "model_name": "Stratified Random",
+      "macro_f1": 0.31305861271536334,
+      "accuracy": 0.3328313253012048,
+      "per_class_f1": [
+        0.30663615560640733,
+        0.21587301587301588,
+        0.4166666666666667
+      ],
+      "is_baseline": true,
+      "is_ensemble": false,
+      "delta_from_best": -0.4128954616307648,
+      "delta_pct": -56.87625102216867
+    },
+    {
+      "model_name": "Most Frequent",
+      "macro_f1": 0.2222222222222222,
+      "accuracy": 0.5,
+      "per_class_f1": [
+        0.0,
+        0.0,
+        0.6666666666666666
+      ],
+      "is_baseline": true,
+      "is_ensemble": false,
+      "delta_from_best": -0.5037318521239059,
+      "delta_pct": -69.38894207290188
+    }
   ]
 }
